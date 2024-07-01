@@ -1,6 +1,10 @@
+
+//Tic-Tac-Toe Gameboard Module
 const Gameboard = (function() {
+    //initialize an empty board
     let board = ['', '', '', '', '', '', '', '', ''];
 
+    //the combos that will trigger the win
     const winningCombinations = [
         [0, 1, 2],
         [3, 4, 5],
@@ -12,34 +16,49 @@ const Gameboard = (function() {
         [2, 4, 6]
     ];
 
+    //return the current state of the board
     const getBoard = () => board;
 
+    //sets the mark on target index
     const setMark = (index, mark) => {
-        if (index >= 0 && index < board.length && board[index] ==='') {
+        //check if the index is valid and the cell is empty
+        if (index >= 0 && index < board.length && board[index] === '') {
+            //in this spot, put mark
             board[index] = mark;
         } else {
+            //log error if move is invalid
             console.log('Invalid Move');
         }
     };
 
+    //resets to intial state
     const resetBoard = () => {
-        board = ['', '', '', '', '', '', '', '', '']
+        board = ['', '', '', '', '', '', '', '', ''];
     };
 
+    //check for winner
     const checkWinner = () => {
+        //go down each [] in winingCombination
         for (let combination of winningCombinations) {
+            //a b c takes on selected combination
             const [a, b, c] = combination;
+            //if a has a mark, & a equals b, & a equals c and not empty
             if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                //then this letter inside is winner!
                 return board[a];
             }
         }
+        //or return no winner
         return null;
-    }
+    };
 
+    //check tie
     const checkTie = () => {
+        //return tie is every cell is not ''
         return board.every(cell => cell !== '');
-    }
+    };
 
+    //makes these functions global
     return {
         getBoard,
         setMark,
@@ -49,25 +68,83 @@ const Gameboard = (function() {
     };
 })();
 
+//factory to make player objects
 const Player = (name, marker) => {
-    return {name, marker};
+    return { name, marker };
 };
 
-const player1 = Player('Player 1', 'X');
-const player2 = Player('Player 2', 'O');
+let player1;
+let player2;
+let currentPlayer;
 
+const startGame = () => {
+    const player1Name = document.getElementById('player1-name').value || 'Player 1';
+    const player2Name = document.getElementById('player2-name').value || 'Player 2';
 
-console.log(Gameboard.getBoard());
+    player1 = Player(player1Name, 'X');
+    player2 = Player(player2Name, 'O');
+    currentPlayer = player1;
 
-Gameboard.setMark(0, 'X');
-console.log(Gameboard.getBoard());
+    document.getElementById('current-player').textContent = `Current Player: ${currentPlayer.name} (${currentPlayer.marker})`;
 
+    Gameboard.resetBoard();
+    renderGameboard();
+}
 
-Gameboard.setMark(1, 'X');
-Gameboard.setMark(2, 'X');
-console.log(Gameboard.getBoard());
-console.log('Winner:', Gameboard.checkWinner());
-console.log('Tie', Gameboard.checkTie());
+//renders gameboard on website
+const renderGameboard = () => {
+    const gameboardContainer = document.getElementById('gameboard');
+    gameboardContainer.innerHTML = '';
 
-Gameboard.resetBoard();
-console.log(Gameboard.getBoard());
+    //goes thru each cell to render
+    Gameboard.getBoard().forEach((cell, index) => {
+        //creates a div for current render
+        const cellElement = document.createElement('div');
+        //adds class of cell
+        cellElement.classList.add('cell');
+        //shows current mark
+        cellElement.textContent = cell;
+        //adds click on the index square
+        cellElement.addEventListener('click', () => handleCellClick(index));
+        //appends the stuff we have done
+        gameboardContainer.appendChild(cellElement);
+    });
+};
+
+//click on a index
+const handleCellClick = (index) => {
+    //if index has aspace
+    if (Gameboard.getBoard()[index] === '') {
+        //set mark on index with current players marker
+        Gameboard.setMark(index, currentPlayer.marker);
+        //show the board
+        renderGameboard();
+
+        //check winner
+        const winner = Gameboard.checkWinner();
+        if (winner) {
+            alert(`${currentPlayer.name} (${currentPlayer.marker}) wins!`);
+            Gameboard.resetBoard();
+            renderGameboard();
+            return;
+        }
+
+        //check tie
+        if (Gameboard.checkTie()) {
+            alert('It\'s a tie!');
+            Gameboard.resetBoard();
+            renderGameboard();
+            return;
+        }
+
+        //switch player
+        currentPlayer = currentPlayer === player1 ? player2 : player1;
+        document.getElementById('current-player').textContent = `Current Player: ${currentPlayer.name} (${currentPlayer.marker})`;
+    }
+};
+
+document.getElementById('start-game').addEventListener('click', startGame);
+document.getElementById('restart-game').addEventListener('click', startGame);
+
+//show board
+renderGameboard();
