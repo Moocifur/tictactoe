@@ -1,10 +1,6 @@
-
-//Tic-Tac-Toe Gameboard Module
 const Gameboard = (function() {
-    //initialize an empty board
     let board = ['', '', '', '', '', '', '', '', ''];
 
-    //the combos that will trigger the win
     const winningCombinations = [
         [0, 1, 2],
         [3, 4, 5],
@@ -113,7 +109,7 @@ const renderGameboard = () => {
 
 //click on a index
 const handleCellClick = (index) => {
-    //if index has aspace
+    const messageElement = document.getElementById('message');
     if (Gameboard.getBoard()[index] === '') {
         //set mark on index with current players marker
         Gameboard.setMark(index, currentPlayer.marker);
@@ -123,7 +119,7 @@ const handleCellClick = (index) => {
         //check winner
         const winner = Gameboard.checkWinner();
         if (winner) {
-            alert(`${currentPlayer.name} (${currentPlayer.marker}) wins!`);
+            messageElement.textContent = `${currentPlayer.name} (${currentPlayer.marker}) wins!`;
             Gameboard.resetBoard();
             renderGameboard();
             return;
@@ -131,20 +127,21 @@ const handleCellClick = (index) => {
 
         //check tie
         if (Gameboard.checkTie()) {
-            alert('It\'s a tie!');
+            messageElement.textContent = 'It\'s a tie!';
             Gameboard.resetBoard();
             renderGameboard();
             return;
         }
 
-        //switch player
         currentPlayer = currentPlayer === player1 ? player2 : player1;
         document.getElementById('current-player').textContent = `Current Player: ${currentPlayer.name} (${currentPlayer.marker})`;
+        messageElement.textContent = '';
+    } else {
+        messageElement.textContent = 'Invalid move! Cell already taken.';
     }
 };
 
 document.getElementById('start-game').addEventListener('click', startGame);
 document.getElementById('restart-game').addEventListener('click', startGame);
 
-//show board
 renderGameboard();
